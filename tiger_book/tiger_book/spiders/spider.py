@@ -1,3 +1,4 @@
+from glob import glob
 import scrapy
 import re
 import json
@@ -18,18 +19,19 @@ INPUTKEY = '+'.join(KEYWORD)
 
 URL = 'https://www.aladin.co.kr/search/wsearchresult.aspx?SearchTarget=All&SearchWord='+INPUTKEY+'&ViewRowCount=25&page=1'
 
-PAGE_URL = 'https://www.aladin.co.kr/search/wsearchresult.aspx?SearchTarget=All&SearchWord='+INPUTKEY+'&ViewRowCount=25&page={}'
+#https://www.aladin.co.kr/search/wsearchresult.aspx?SearchTarget=All&SearchWord=호랑이&ViewRowCount=25&page=1
 
-# URL = 'https://www.aladin.co.kr/search/wsearchresult.aspx?SearchTarget=All&SearchWord=호랑이+그림책&ViewRowCount=25&page=5'
+PAGE_URL = 'https://www.aladin.co.kr/search/wsearchresult.aspx?SearchTarget=All&SearchWord='+INPUTKEY+'&ViewRowCount=25&page={}'
 
 class SpiderSpider(scrapy.Spider):
     name = 'spider'
     start_urls = [URL]
     
     def parse(self, response):
-
+        
         NUM = 1
 
+        #한 페이지 이상
         LONG = response.xpath('//*[@id="short"]/div[12]/a')
 
         if LONG == []:
@@ -50,10 +52,9 @@ class SpiderSpider(scrapy.Spider):
 
                 PAGE_URLS = PAGE_URL.format(i)
 
-                #print(PAGE_URLS)
-
                 yield scrapy.Request(PAGE_URLS, self.detail_parse)
 
+        #한 페이지
         if LONG != []:
 
             page = response.xpath('//*[@id="short"]/div[12]/a/@href').extract()        
@@ -86,12 +87,15 @@ class SpiderSpider(scrapy.Spider):
 
                 BOOK_URL = (f'https://www.aladin.co.kr/shop/wproduct.aspx?ItemId={BOOKID}')
 
-                print(BOOK_URL)
+               # print(BOOK_URL)
 
                 yield scrapy.Request(BOOK_URL, self.book_parse)
 
     def book_parse(self,response):
 
+        two_List = []
+
+        # 키워드가 제목에 포함
         if BOOKTYPE == '1' :
 
             title = response.xpath('//*[@id="Ere_prod_allwrap"]/div[3]/div[2]/div[1]/div/ul/li[2]/div/a[1]/text()')[0].extract()  
@@ -102,7 +106,59 @@ class SpiderSpider(scrapy.Spider):
                     
                     print(title)
 
-        # if BOOKTYPE == '2':
+        # 키워드가 제목에 포함 되어있지많을 경우
+        if BOOKTYPE == '2':
+            
+            title = response.xpath('//*[@id="Ere_prod_allwrap"]/div[3]/div[2]/div[1]/div/ul/li[2]/div/a[1]/text()')[0].extract()
+
+            for i in KEYWORD:
+        
+                if i not in title:
+
+                    two_List.append(title)
+            
+            if len(two_List) == len(KEYWORD) :
+
+                No_title = two_List[0]
+
+                print(response, No_title)
+
+
+
+
+
+   
+                    
+                
+  
+
+
+
+                # for num in range(1,15):
+
+                #         html = response.xpath(f'/html/head/meta[{num}]').get()
+                        
+                #         html_List = html.split('"')
+
+                #         meta_name = html_List[1]
+
+                #         if meta_name == 'description' :
+
+                #             body_num = num
+
+                #             body_html = response.xpath(f'/html/head/meta[{body_num}]').get()
+
+                #             body_List = body_html.split('"')
+
+                #             summary = body_List[3]
+
+                #             if key in summary:
+
+                #                 #print(summary)
+
+                #                 title = response.xpath('//*[@id="Ere_prod_allwrap"]/div[3]/div[2]/div[1]/div/ul/li[2]/div/a[1]/text()')[0].extract()
+
+                #                 print(key,title)
 
 
     
