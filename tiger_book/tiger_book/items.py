@@ -9,7 +9,6 @@ class TigerBookItem(scrapy.Item):
     책소개 = scrapy.Field()
     정가 = scrapy.Field()
     판매가 = scrapy.Field()
-    책표지 = scrapy.Field()
     URL= scrapy.Field()
 
 
