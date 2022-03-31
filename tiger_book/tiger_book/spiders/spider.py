@@ -1,11 +1,11 @@
-from glob import glob
 import scrapy
 import re
-import json
+from tiger_book.items import TigerBookItem
+
+
+#KEYWORD = input('찾고 싶은 키워드를 입력해주세요 (키워드는 띄어쓰기로 구분 됩니다) : ').split(' ')
 
 key = ('호랑이 그림책')
-# KEYWORD = input('찾고 싶은 키워드를 입력해주세요 (키워드는 띄어쓰기로 구분 됩니다) : ').split(' ')
-
 KEYWORD = key.split(' ')
 
 while True:
@@ -93,20 +93,53 @@ class SpiderSpider(scrapy.Spider):
 
     def book_parse(self,response):
 
+        item = TigerBookItem()
+
         two_List = []
-
+        
         # 키워드가 제목에 포함
-        if BOOKTYPE == '1' :
 
-            title = response.xpath('//*[@id="Ere_prod_allwrap"]/div[3]/div[2]/div[1]/div/ul/li[2]/div/a[1]/text()')[0].extract()  
+        title = response.xpath('//*[@id="Ere_prod_allwrap"]/div[3]/div[2]/div[1]/div/ul/li[2]/div/a[1]/text()')[0].extract()
 
-            for i in KEYWORD:
+        for num in range(1,15):
+            
+            html = response.xpath(f'/html/head/meta[{num}]').get()
+                            
+            html_List = html.split('"')
 
-                if i in title:
+            meta_name = html_List[1]
+
+            if meta_name == 'description' :
+
+                body_num = num
+
+                body_html = response.xpath(f'/html/head/meta[{body_num}]').get()
+
+                body_List = body_html.split('"')
+
+                summary = body_List[3]  
+
+        for i in KEYWORD:
+
+            if i in title:
                     
-                    print(title)
+                item['제목'] = response.xpath('//*[@id="Ere_prod_allwrap"]/div[3]/div[2]/div[1]/div/ul/li[2]/div/a[1]/text()')[0].extract()
+                    
+                item['글'] = response.xpath('//*[@id="Ere_prod_allwrap"]/div[3]/div[2]/div[1]/div/ul/li[3]/a[1]/text()')[0].extract()
 
-        # 키워드가 제목에 포함 되어있지많을 경우
+                item['그림'] = response.xpath('//*[@id="Ere_prod_allwrap"]/div[3]/div[2]/div[1]/div/ul/li[3]/a[2]/text()')[0].extract()
+
+                item['출판사'] = response.xpath('//*[@id="Ere_prod_allwrap"]/div[3]/div[2]/div[1]/div/ul/li[3]/a[3]/text()')[0].extract()
+
+                item['책소개'] = summary
+
+                item['정가'] = response.xpath('//*[@id="Ere_prod_allwrap"]/div[4]/div[4]/div/div[1]/ul/li[1]/div[2]/text()')[0].extract()
+
+                item['판매가'] = response.xpath('//*[@id="Ere_prod_allwrap"]/div[4]/div[4]/div/div[1]/ul/li[2]/div[2]/span/text()')[0].extract()
+
+                item['URL'] = response.xpath('/html/head/link[1]/@href')[0].extract()
+
+        #키워드가 제목에 포함 되어있지않지만 줄거리에는 포함
         if BOOKTYPE == '2':
             
             title = response.xpath('//*[@id="Ere_prod_allwrap"]/div[3]/div[2]/div[1]/div/ul/li[2]/div/a[1]/text()')[0].extract()
@@ -119,47 +152,30 @@ class SpiderSpider(scrapy.Spider):
             
             if len(two_List) == len(KEYWORD) :
 
-                No_title = two_List[0]
+                for i in KEYWORD:
 
-                print(response, No_title)
+                    if i in summary:
 
-
-
-
-
-   
+                        item['제목'] = response.xpath('//*[@id="Ere_prod_allwrap"]/div[3]/div[2]/div[1]/div/ul/li[2]/div/a[1]/text()')[0].extract()
                     
-                
+                        item['글'] = response.xpath('//*[@id="Ere_prod_allwrap"]/div[3]/div[2]/div[1]/div/ul/li[3]/a[1]/text()')[0].extract()
+
+                        item['그림'] = response.xpath('//*[@id="Ere_prod_allwrap"]/div[3]/div[2]/div[1]/div/ul/li[3]/a[2]/text()')[0].extract()
+
+                        item['출판사'] = response.xpath('//*[@id="Ere_prod_allwrap"]/div[3]/div[2]/div[1]/div/ul/li[3]/a[3]/text()')[0].extract()
+
+                        item['책소개'] = summary
+
+                        item['정가'] = response.xpath('//*[@id="Ere_prod_allwrap"]/div[4]/div[4]/div/div[1]/ul/li[1]/div[2]/text()')[0].extract()
+
+                        item['판매가'] = response.xpath('//*[@id="Ere_prod_allwrap"]/div[4]/div[4]/div/div[1]/ul/li[2]/div[2]/span/text()')[0].extract()
+
+                        item['URL'] = response.xpath('/html/head/link[1]/@href')[0].extract()
+                      
+            return item
+                    
+        return item
   
-
-
-
-                # for num in range(1,15):
-
-                #         html = response.xpath(f'/html/head/meta[{num}]').get()
-                        
-                #         html_List = html.split('"')
-
-                #         meta_name = html_List[1]
-
-                #         if meta_name == 'description' :
-
-                #             body_num = num
-
-                #             body_html = response.xpath(f'/html/head/meta[{body_num}]').get()
-
-                #             body_List = body_html.split('"')
-
-                #             summary = body_List[3]
-
-                #             if key in summary:
-
-                #                 #print(summary)
-
-                #                 title = response.xpath('//*[@id="Ere_prod_allwrap"]/div[3]/div[2]/div[1]/div/ul/li[2]/div/a[1]/text()')[0].extract()
-
-                #                 print(key,title)
-
 
     
             
