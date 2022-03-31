@@ -18,6 +18,10 @@ INPUTKEY = '+'.join(KEYWORD)
 
 URL = 'https://www.aladin.co.kr/search/wsearchresult.aspx?SearchTarget=All&SearchWord='+INPUTKEY+'&ViewRowCount=25&page=1'
 
+#https://www.aladin.co.kr/shop/wproduct.aspx?ItemId=269644239
+
+#https://www.aladin.co.kr/m/mproduct.aspx?ItemId=62005
+
 #https://www.aladin.co.kr/search/wsearchresult.aspx?SearchTarget=All&SearchWord=호랑이&ViewRowCount=25&page=1
 
 PAGE_URL = 'https://www.aladin.co.kr/search/wsearchresult.aspx?SearchTarget=All&SearchWord='+INPUTKEY+'&ViewRowCount=25&page={}'
@@ -100,23 +104,19 @@ class SpiderSpider(scrapy.Spider):
 
         title = response.xpath('//*[@id="Ere_prod_allwrap"]/div[3]/div[2]/div[1]/div/ul/li[2]/div/a[1]/text()')[0].extract()
 
+        BOOKID =  response.xpath('/html/head/link[1]/@href')[0].extract().split('=')[1]
+        
         for num in range(1,15):
             
             html = response.xpath(f'/html/head/meta[{num}]').get()
                             
-            html_List = html.split('"')
-
-            meta_name = html_List[1]
+            meta_name = html.split('"')[1]
 
             if meta_name == 'description' :
 
-                body_num = num
+                body_html = response.xpath(f'/html/head/meta[{num}]').get()
 
-                body_html = response.xpath(f'/html/head/meta[{body_num}]').get()
-
-                body_List = body_html.split('"')
-
-                summary = body_List[3]  
+                summary = body_html.split('"')[3] 
 
         for i in KEYWORD:
 
@@ -134,9 +134,9 @@ class SpiderSpider(scrapy.Spider):
 
                 item['정가'] = response.xpath('//*[@id="Ere_prod_allwrap"]/div[4]/div[4]/div/div[1]/ul/li[1]/div[2]/text()')[0].extract()
 
-                item['판매가'] = response.xpath('//*[@id="Ere_prod_allwrap"]/div[4]/div[4]/div/div[1]/ul/li[2]/div[2]/span/text()')[0].extract()
+                item['판매가'] = response.xpath('//*[@id="Ere_prod_allwrap"]/div[4]/div[4]/div/div[1]/ul/li[2]/div[2]/span/text()')[0].extract() + '원'
 
-                item['URL'] = response.xpath('/html/head/link[1]/@href')[0].extract()
+                item['URL'] = (f'https://www.aladin.co.kr/shop/wproduct.aspx?ItemId={BOOKID}')
 
         #키워드가 제목에 포함 되어있지않지만 줄거리에는 포함
         if BOOKTYPE == '2':
@@ -167,9 +167,9 @@ class SpiderSpider(scrapy.Spider):
 
                         item['정가'] = response.xpath('//*[@id="Ere_prod_allwrap"]/div[4]/div[4]/div/div[1]/ul/li[1]/div[2]/text()')[0].extract()
 
-                        item['판매가'] = response.xpath('//*[@id="Ere_prod_allwrap"]/div[4]/div[4]/div/div[1]/ul/li[2]/div[2]/span/text()')[0].extract()
+                        item['판매가'] = response.xpath('//*[@id="Ere_prod_allwrap"]/div[4]/div[4]/div/div[1]/ul/li[2]/div[2]/span/text()')[0].extract() + '원'
 
-                        item['URL'] = response.xpath('/html/head/link[1]/@href')[0].extract()
+                        item['URL'] = (f'https://www.aladin.co.kr/shop/wproduct.aspx?ItemId={BOOKID}')
                       
             return item
                     
