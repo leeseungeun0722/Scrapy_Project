@@ -2,7 +2,6 @@ import scrapy
 import re
 from tiger_book.items import TigerBookItem
 
-
 #KEYWORD = input('찾고 싶은 키워드를 입력해주세요 (키워드는 띄어쓰기로 구분 됩니다) : ').split(' ')
 
 key = ('호랑이 그림책')
